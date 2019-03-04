@@ -17,6 +17,22 @@ depends_on = None
 
 
 def upgrade():
+    """
+    Upgrade notes:
+
+    Run the following once column is present or to fill in any missing values:
+    
+    BEGIN;
+    UPDATE orders
+    SET sorting_price = -(amount_give / amount_get::numeric)
+    WHERE token_give = E'\\x0000000000000000000000000000000000000000' AND sorting_price IS NULL;
+
+    UPDATE orders
+    SET sorting_price = (amount_get / amount_give::numeric)
+    WHERE token_get = E'\\x0000000000000000000000000000000000000000' AND sorting_price IS NULL;
+    COMMIT;
+
+    """
     op.add_column("orders", Column("sorting_price", Numeric))
     op.create_index("index_orders_on_sorting_price", "orders",
                     ["sorting_price"])
